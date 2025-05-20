@@ -1,0 +1,99 @@
+service: serverless-university-ems-enrollment
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-southeast-1
+  environment:
+    DEBUG: ${env:DEBUG, 0}
+    STAGE: ${env:STAGE, "dev"}
+    PORT: ${env:PORT}
+    DB_HOST: ${env:DB_HOST}
+    DB_PORT: ${env:DB_PORT}
+    DB_USER_NAME: ${env:DB_USER_NAME}
+    DB_PASSWORD: ${env:DB_PASSWORD}
+    DB_NAME: ${env:DB_NAME}
+
+functions:
+  api:
+    handler: dist/src/serverless.handler
+    vpc:
+      securityGroupIds:
+        - sg-021c0672641daa5eb
+      subnetIds:
+        - subnet-081117d9dd0cf6bbb
+        - subnet-064b2e3d2bdccdf5b
+        - subnet-0e78358b4cddb77c2
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
+
+  student-enrollment-class-group:
+    handler: dist/src/handlers/enrollClassGroup.handler
+    vpc:
+      securityGroupIds:
+        - sg-021c0672641daa5eb
+      subnetIds:
+        - subnet-081117d9dd0cf6bbb
+        - subnet-064b2e3d2bdccdf5b
+        - subnet-0e78358b4cddb77c2
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - StudentEnrollClassGroupQueue
+              - Arn
+
+resources:
+  Resources:
+    StudentEnrollClassGroupQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: student-enrollment-class-group.fifo
+        FifoQueue: true
+        ContentBasedDeduplication: true
+
+custom:
+  dotenv:
+    exclude:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+  webpack:
+    webpackConfig: './webpack.config.js'
+    includeModules:
+      forceExclude:
+        - aws-sdk
+        - pg-native
+        - mysql
+        - mysql2
+        - sqlite3
+        - oracledb
+    packager: 'npm'
+  commonExcludes:
+    additionalExcludes:
+      - 'aws-sdk'
+      - 'pg-native'
+      - 'mysql'
+      - 'mysql2'
+      - 'sqlite3'
+      - 'oracledb'
+  includeDependencies:
+    enableCaching: true
+    additionalIncludes:
+      - 'class-transformer'
+
+package:
+  excludeDevDependencies: true
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies

@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres
+    container_name: my_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: university_ems_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: my_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: 123
+    ports:
+      - '8080:80'
+    depends_on:
+      - postgres
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - '4566:4566'
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack
+    volumes:
+      - ./localstack_data:/var/lib/localstack
+
+volumes:
+  postgres_data:
+  localstack_data:
