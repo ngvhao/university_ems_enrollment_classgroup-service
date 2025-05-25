@@ -77,6 +77,8 @@ export const emailTailConstants = {
 
 export const AWSConstants = {
   REGION: 'ap-southeast-1',
+  DYNAMODB_CLIENT: 'DYNAMODB_CLIENT',
+  DYNAMO_ENROLLMENT_TABLE: 'RegistrationClassGroupStatus',
 };
 
 export const QueueConfig = {

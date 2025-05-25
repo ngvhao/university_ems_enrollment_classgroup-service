@@ -1,4 +1,4 @@
-service: serverless-university-ems-enrollment
+service: serverless-uni-enrollment
 frameworkVersion: '3'
 useDotenv: true
 
@@ -34,8 +34,8 @@ functions:
           method: ANY
           path: '{proxy+}'
 
-  student-enrollment-class-group:
-    handler: dist/src/handlers/enrollClassGroup.handler
+  service:
+    handler: dist/src/handlers/enrollClassGroupHandler.handler
     vpc:
       securityGroupIds:
         - sg-021c0672641daa5eb

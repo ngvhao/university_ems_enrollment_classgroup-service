@@ -37,34 +37,11 @@ export class UserService {
   async getOne(
     condition: FindOptionsWhere<UserEntity> | FindOptionsWhere<UserEntity>[],
     relations?: FindOptionsRelations<UserEntity>,
-    selectFields?: (keyof UserEntity)[],
-    selectRelationsFields?: { [K in keyof UserEntity]?: string[] },
   ): Promise<Partial<UserEntity> | null> {
-    const query = this.userRepository.createQueryBuilder('user');
-
-    query.where(condition);
-
-    if (selectFields?.length) {
-      query.select(selectFields.map((field) => `user.${field}`));
-    }
-
-    if (relations) {
-      for (const relationName of Object.keys(relations)) {
-        if (relations[relationName as keyof UserEntity]) {
-          query.leftJoinAndSelect(`user.${relationName}`, relationName);
-
-          const relationSelects =
-            selectRelationsFields?.[relationName as keyof UserEntity];
-          if (relationSelects?.length) {
-            query.addSelect(
-              relationSelects.map((field) => `${relationName}.${field}`),
-            );
-          }
-        }
-      }
-    }
-
-    return query.getOne();
+    return this.userRepository.findOne({
+      where: condition,
+      relations: relations,
+    });
   }
 
   /**

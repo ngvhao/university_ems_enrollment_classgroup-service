@@ -11,4 +11,24 @@ export class CourseHelper {
     }
     return 1;
   }
+
+  static mergeAndMarkClassGroups<T extends number, U extends number>(
+    cancelClassGroupIds: T[],
+    registeredClassGroupIds: U[],
+  ): (
+    | { classGroupId: T; isRegistered: false }
+    | { classGroupId: U; isRegistered: true }
+  )[] {
+    const cancelledItems = cancelClassGroupIds.map((item) => ({
+      classGroupId: item,
+      isRegistered: false as const,
+    }));
+
+    const registeredItems = registeredClassGroupIds.map((item) => ({
+      classGroupId: item,
+      isRegistered: true as const,
+    }));
+
+    return [...cancelledItems, ...registeredItems];
+  }
 }
