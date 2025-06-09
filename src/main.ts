@@ -86,6 +86,7 @@ export function setupMiddlewares(app: INestApplication) {
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.setGlobalPrefix(API_PREFIX_PATH);
   return expressApp;
 }
 
