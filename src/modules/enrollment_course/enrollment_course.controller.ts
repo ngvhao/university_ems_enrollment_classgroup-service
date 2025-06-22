@@ -8,6 +8,7 @@ import {
   Body,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { EnrollmentCourseService } from './enrollment_course.service';
@@ -28,13 +29,19 @@ import {
 import { EEnrollmentStatus } from 'src/utils/enums/course.enum';
 import { CreateEnrollmentCourseDto } from './dtos/createEnrollmentCourse.dto';
 import { EnrollmentCourseEntity } from './entities/enrollment_course.entity';
+import { RequestHasStudentDto } from 'src/utils/request-has-student-dto';
+import { StudentInterceptor } from 'src/interceptors/get-student.interceptor';
+import { SettingService } from '../setting/setting.service';
 
 @ApiTags('Quản lý Đăng ký Môn học (Enrollments)')
 @ApiBearerAuth('token')
 @UseGuards(JwtAuthGuard)
 @Controller('enrollments')
 export class EnrollmentCourseController {
-  constructor(private readonly enrollmentService: EnrollmentCourseService) {}
+  constructor(
+    private readonly enrollmentService: EnrollmentCourseService,
+    private readonly settingService: SettingService,
+  ) {}
 
   @Post()
   @UseGuards(RolesGuard)
@@ -111,9 +118,10 @@ export class EnrollmentCourseController {
     }).send(res);
   }
 
-  @Get('/my')
+  @Get('/me')
   @UseGuards(RolesGuard)
   @Roles([EUserRole.STUDENT])
+  @UseInterceptors(StudentInterceptor)
   @ApiOperation({ summary: '[Student] Lấy danh sách đăng ký của bản thân' })
   @ApiQuery({
     name: 'page',
@@ -152,16 +160,25 @@ export class EnrollmentCourseController {
     description: 'Không phải sinh viên hoặc chưa liên kết hồ sơ SV.',
   })
   async findMyEnrollments(
-    @Body('batchId') batchId: number,
-    @Req() req: RequestHasUserDto & Request,
+    @Query('semesterId') semesterId: string,
+    @Req() req: RequestHasStudentDto & Request,
     @Res() res: Response,
   ) {
-    const currentUser = req.user;
-    console.log(currentUser);
-
-    console.log(batchId);
+    const student = req.student;
+    console.log('student', student);
+    console.log(semesterId);
+    const nextRegisterCourseSemester = await this.settingService.findOne(
+      'nextRegisterCourseSemesterId',
+    );
+    const { data, meta } =
+      await this.enrollmentService.getEnrollmentsBySemesterId(
+        student.id,
+        nextRegisterCourseSemester.value,
+      );
     return new SuccessResponse({
-      message: 'Lấy danh sách đăng ký của bạn thành công.',
+      data,
+      metadata: meta,
+      message: 'Lấy danh sách đăng ký môn học thành công.',
     }).send(res);
   }
 }

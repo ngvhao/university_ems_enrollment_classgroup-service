@@ -27,6 +27,8 @@ import { AWSConstants } from 'src/utils/constants';
 import { EnrollStatusDynamoDto } from './dtos/enrollStatusDynamo.dto';
 import { EClassGroupStatus } from 'src/utils/enums/class.enum';
 import { CourseHelper } from 'src/utils/helpers/course.helper';
+import { MetaDataInterface } from 'src/utils/interfaces/meta-data.interface';
+import { generatePaginationMeta } from 'src/utils/common/getPagination.utils';
 
 @Injectable()
 export class EnrollmentCourseService {
@@ -63,41 +65,6 @@ export class EnrollmentCourseService {
       throw new NotFoundException(`Không tìm thấy lượt đăng ký với ID ${id}`);
     }
     return enrollment;
-  }
-
-  /**
-   * Helper: Kiểm tra quyền truy cập enrollment của người dùng hiện tại.
-   * @param enrollment - Bản ghi enrollment cần kiểm tra.
-   * @param currentUser - Thông tin người dùng hiện tại.
-   * @throws ForbiddenException nếu không có quyền.
-   */
-  private async checkEnrollmentAccessPermission(
-    enrollment: EnrollmentCourseEntity,
-    currentUser: UserEntity,
-  ): Promise<void> {
-    if (!currentUser) {
-      throw new ForbiddenException('Hành động yêu cầu xác thực.');
-    }
-
-    if (
-      [EUserRole.ADMINISTRATOR, EUserRole.ACADEMIC_MANAGER].includes(
-        currentUser.role,
-      )
-    ) {
-      return;
-    }
-    if (currentUser.role === EUserRole.STUDENT) {
-      const studentProfile = await this.studentService.findOneById(
-        currentUser.id,
-      );
-      if (!studentProfile || enrollment.studentId !== studentProfile.id) {
-        throw new ForbiddenException(
-          'Bạn không có quyền truy cập lượt đăng ký này.',
-        );
-      }
-      return;
-    }
-    throw new ForbiddenException('Bạn không có quyền thực hiện hành động này.');
   }
 
   async enrollClassGroup(
@@ -168,7 +135,7 @@ export class EnrollmentCourseService {
             },
           },
         },
-        status: EClassGroupStatus.OPEN,
+        status: EClassGroupStatus.OPEN_FOR_REGISTER,
       });
       if (!classGroup) {
         console.log(`Nhóm lớp không tìm thấy với id: ${classGroupId}`);
@@ -207,7 +174,7 @@ export class EnrollmentCourseService {
             },
           },
         },
-        status: EClassGroupStatus.OPEN,
+        status: EClassGroupStatus.OPEN_FOR_REGISTER,
       });
       if (!classGroup) {
         console.log(`Nhóm lớp không tìm thấy với id: ${classGroupId}`);
@@ -350,5 +317,39 @@ export class EnrollmentCourseService {
         updatedAt: item.updatedAt,
       } as EnrollStatusDynamoDto;
     });
+  }
+
+  async getEnrollmentsBySemesterId(
+    studentId: number,
+    semesterId: string,
+  ): Promise<{ data: EnrollmentCourseEntity[]; meta: MetaDataInterface }> {
+    const [data, total] = await this.enrollmentRepository.findAndCount({
+      where: {
+        studentId: studentId,
+        classGroup: {
+          semesterId: Number(semesterId),
+        },
+        status: EEnrollmentStatus.ENROLLED,
+      },
+      relations: {
+        classGroup: {
+          course: {
+            curriculumCourses: {
+              prerequisiteCourse: true,
+            },
+          },
+          schedules: {
+            room: true,
+            timeSlot: true,
+          },
+          semester: true,
+        },
+      },
+    });
+    const meta = generatePaginationMeta(total, 1, 1000);
+    return {
+      data,
+      meta,
+    };
   }
 }

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ClassWeeklyScheduleEntity } from 'src/modules/class_weekly_schedule/entities/class_weekly_schedule.entity';
 import { CourseEntity } from 'src/modules/course/entities/course.entity';
 import { EnrollmentCourseEntity } from 'src/modules/enrollment_course/entities/enrollment_course.entity';
 import { LecturerEntity } from 'src/modules/lecturer/entities/lecturer.entity';
@@ -35,15 +36,16 @@ export class ClassGroupEntity extends IEntity {
 
   @ApiProperty({
     enum: EClassGroupStatus,
-    example: EClassGroupStatus.OPEN,
+    example: EClassGroupStatus.OPEN_FOR_REGISTER,
     description: 'Trạng thái của nhóm lớp',
-    default: EClassGroupStatus.OPEN,
+    default: EClassGroupStatus.OPEN_FOR_REGISTER,
   })
   @Column({
     type: 'enum',
     enum: EClassGroupStatus,
-    default: EClassGroupStatus.OPEN,
-    comment: 'Trạng thái: CLOSED = 0,OPEN = 1, LOCKED = 2, CANCELLED = 3',
+    default: EClassGroupStatus.OPEN_FOR_REGISTER,
+    comment:
+      'Trạng thái: CLOSED_FOR_REGISTER = 0, OPEN_FOR_REGISTER = 1, LOCKED = 2, CANCELLED = 3, IN_PROGRESS = 4',
   })
   status: EClassGroupStatus;
 
@@ -97,4 +99,14 @@ export class ClassGroupEntity extends IEntity {
   @ApiProperty({ description: 'ID của môn học', example: 15 })
   @Column({ nullable: false })
   courseId: number;
+
+  @ApiProperty({
+    type: () => [ClassWeeklyScheduleEntity],
+    description: 'Danh sách các lịch học của nhóm lớp',
+  })
+  @OneToMany(
+    () => ClassWeeklyScheduleEntity,
+    (classWeeklySchedule) => classWeeklySchedule.classGroup,
+  )
+  schedules: ClassWeeklyScheduleEntity[];
 }

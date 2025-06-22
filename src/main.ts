@@ -13,6 +13,7 @@ import helmet from 'helmet';
 import * as bodyParser from 'body-parser';
 import { API_PREFIX_PATH } from './utils/constants';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 
 export function setupMiddlewares(app: INestApplication) {
   const expressApp = app as NestExpressApplication;
@@ -48,6 +49,7 @@ export function setupMiddlewares(app: INestApplication) {
   );
 
   const apiPath = `${API_PREFIX_PATH}/docs`;
+  app.setGlobalPrefix(API_PREFIX_PATH);
 
   const config = new DocumentBuilder()
     .setTitle('Xypass')
@@ -62,6 +64,7 @@ export function setupMiddlewares(app: INestApplication) {
   });
 
   app.use(bodyParser.json());
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -85,8 +88,12 @@ export function setupMiddlewares(app: INestApplication) {
       },
     }),
   );
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.setGlobalPrefix(API_PREFIX_PATH);
+
   return expressApp;
 }
 
