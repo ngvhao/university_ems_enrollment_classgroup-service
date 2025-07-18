@@ -38,12 +38,12 @@ export class StudentEntity extends IEntity {
   @ApiProperty({
     description: 'Trạng thái tài khoản',
     enum: EStudentStatus,
-    default: EStudentStatus.ENROLLED,
+    default: EStudentStatus.STUDYING,
   })
   @Column({
     type: 'enum',
     enum: EStudentStatus,
-    default: EStudentStatus.ENROLLED,
+    default: EStudentStatus.STUDYING,
   })
   status: EStudentStatus;
 
