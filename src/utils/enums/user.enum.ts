@@ -1,14 +1,13 @@
 export enum EUserRole {
-  GUEST = 0,
   STUDENT = 1,
   LECTURER = 2,
   ACADEMIC_MANAGER = 3,
-  HEAD_OF_DEPARTMENT = 4,
+  HEAD_OF_FACULTY = 4,
   ADMINISTRATOR = 5,
 }
 
 export enum EStudentStatus {
-  ENROLLED = 0, // Đang học (đang theo học bình thường)
+  STUDYING = 5, // Đang học (đang theo học bình thường)
   ON_LEAVE = 1, // Bảo lưu (nghỉ tạm thời có phép)
   GRADUATED = 2, // Đã tốt nghiệp
   DROPPED_OUT = 3, // Thôi học (tự ý hoặc bị buộc thôi học)
@@ -16,7 +15,7 @@ export enum EStudentStatus {
 }
 
 export enum EAccountStatus {
-  INACTIVE = 0,
+  INACTIVE = 2,
   ACTIVE = 1,
 }
 
@@ -25,7 +24,7 @@ export enum EALLROLE {
 }
 
 export enum EAcademicRank {
-  MASTER = 0,
+  MASTER = 4,
   DOCTOR = 1,
   ASSOCIATE_PROFESSOR = 2,
   PROFESSOR = 3,

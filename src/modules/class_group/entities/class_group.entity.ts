@@ -13,6 +13,7 @@ import {
   Index,
   OneToMany,
 } from 'typeorm';
+import { ClassWeeklyScheduleEntity } from 'src/modules/class_weekly_schedule/entities/class_weekly_schedule.entity';
 
 @Entity('class_groups')
 @Index(['courseId', 'groupNumber', 'semesterId'], { unique: true })
@@ -97,4 +98,14 @@ export class ClassGroupEntity extends IEntity {
   @ApiProperty({ description: 'ID của môn học', example: 15 })
   @Column({ nullable: false })
   courseId: number;
+
+  @ApiProperty({
+    type: () => [ClassWeeklyScheduleEntity],
+    description: 'Danh sách các lịch học của nhóm lớp',
+  })
+  @OneToMany(
+    () => ClassWeeklyScheduleEntity,
+    (classWeeklySchedule) => classWeeklySchedule.classGroup,
+  )
+  schedules: ClassWeeklyScheduleEntity[];
 }
