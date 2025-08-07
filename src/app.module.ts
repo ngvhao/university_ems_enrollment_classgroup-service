@@ -11,6 +11,7 @@ import { UserModule } from './modules/user/user.module';
 import { EnrollmentCourseModule } from './modules/enrollment_course/enrollment_course.module';
 import { HttpModule } from '@nestjs/axios';
 import { DynamoDBModule } from './aws/dynamodb/dynamodb.module';
+import { SettingModule } from './modules/setting/setting.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DynamoDBModule } from './aws/dynamodb/dynamodb.module';
     EnrollmentCourseModule,
     HttpModule,
     DynamoDBModule,
+    SettingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

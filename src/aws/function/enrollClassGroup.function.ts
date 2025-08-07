@@ -84,7 +84,7 @@ export async function enrollOrUnenrollClassGroup(
       console.log(
         `${currentLogPrefix} Processing ENROLLMENT for student ${studentId}.`,
       );
-      if (classGroup.status !== EClassGroupStatus.OPEN) {
+      if (classGroup.status !== EClassGroupStatus.OPEN_FOR_REGISTER) {
         failureReason = `Nhóm lớp học ID ${classGroupId} không còn mở để đăng ký. Status: ${EClassGroupStatus[classGroup.status]}.`;
         throw new BadRequestException(failureReason);
       }
@@ -153,12 +153,12 @@ export async function enrollOrUnenrollClassGroup(
         updatedClassGroup &&
         updatedClassGroup.registeredStudents >= updatedClassGroup.maxStudents
       ) {
-        if (updatedClassGroup.status === EClassGroupStatus.OPEN) {
+        if (updatedClassGroup.status === EClassGroupStatus.OPEN_FOR_REGISTER) {
           await queryRunner.manager.update(ClassGroupEntity, classGroupId, {
-            status: EClassGroupStatus.CLOSED,
+            status: EClassGroupStatus.CLOSED_FOR_REGISTER,
           });
           console.log(
-            `${currentLogPrefix} Nhóm lớp ${classGroupId} được set trạng thái CLOSED.`,
+            `${currentLogPrefix} Nhóm lớp ${classGroupId} được set trạng thái CLOSED_FOR_REGISTER.`,
           );
         }
       }
@@ -210,13 +210,14 @@ export async function enrollOrUnenrollClassGroup(
           classGroupAfterDecrement &&
           classGroupAfterDecrement.registeredStudents <
             classGroup.maxStudents &&
-          classGroupAfterDecrement.status === EClassGroupStatus.CLOSED
+          classGroupAfterDecrement.status ===
+            EClassGroupStatus.CLOSED_FOR_REGISTER
         ) {
           await queryRunner.manager.update(ClassGroupEntity, classGroupId, {
-            status: EClassGroupStatus.OPEN,
+            status: EClassGroupStatus.OPEN_FOR_REGISTER,
           });
           console.log(
-            `${currentLogPrefix} Class group ${classGroupId} status set back to OPEN.`,
+            `${currentLogPrefix} Class group ${classGroupId} status set back to OPEN_FOR_REGISTER.`,
           );
         }
       } else {

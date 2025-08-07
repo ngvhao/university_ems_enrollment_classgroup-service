@@ -31,6 +31,8 @@ import { CourseHelper } from 'src/utils/helpers/course.helper';
 import { ClassWeeklyScheduleEntity } from '../class_weekly_schedule/entities/class_weekly_schedule.entity';
 import { In } from 'typeorm';
 import { ClassGroupEntity } from '../class_group/entities/class_group.entity';
+import { MetaDataInterface } from 'src/utils/interfaces/meta-data.interface';
+import { generatePaginationMeta } from 'src/utils/common/getPagination.utils';
 
 @Injectable()
 export class EnrollmentCourseService {
@@ -251,7 +253,7 @@ export class EnrollmentCourseService {
             },
           },
         },
-        status: EClassGroupStatus.OPEN,
+        status: EClassGroupStatus.OPEN_FOR_REGISTER,
       });
       if (!classGroup) {
         console.log(`Nhóm lớp không tìm thấy với id: ${classGroupId}`);
@@ -290,7 +292,7 @@ export class EnrollmentCourseService {
             },
           },
         },
-        status: EClassGroupStatus.OPEN,
+        status: EClassGroupStatus.OPEN_FOR_REGISTER,
       });
       if (!classGroup) {
         console.log(`Nhóm lớp không tìm thấy với id: ${classGroupId}`);
@@ -433,5 +435,39 @@ export class EnrollmentCourseService {
         updatedAt: item.updatedAt,
       } as EnrollStatusDynamoDto;
     });
+  }
+
+  async getEnrollmentsBySemesterId(
+    studentId: number,
+    semesterId: string,
+  ): Promise<{ data: EnrollmentCourseEntity[]; meta: MetaDataInterface }> {
+    const [data, total] = await this.enrollmentRepository.findAndCount({
+      where: {
+        studentId: studentId,
+        classGroup: {
+          semesterId: Number(semesterId),
+        },
+        status: EEnrollmentStatus.ENROLLED,
+      },
+      relations: {
+        classGroup: {
+          course: {
+            curriculumCourses: {
+              prerequisiteCourse: true,
+            },
+          },
+          schedules: {
+            room: true,
+            timeSlot: true,
+          },
+          semester: true,
+        },
+      },
+    });
+    const meta = generatePaginationMeta(total, 1, 1000);
+    return {
+      data,
+      meta,
+    };
   }
 }
