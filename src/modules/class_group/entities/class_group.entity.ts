@@ -14,7 +14,6 @@ import {
   Index,
   OneToMany,
 } from 'typeorm';
-import { ClassWeeklyScheduleEntity } from 'src/modules/class_weekly_schedule/entities/class_weekly_schedule.entity';
 
 @Entity('class_groups')
 @Index(['courseId', 'groupNumber', 'semesterId'], { unique: true })
