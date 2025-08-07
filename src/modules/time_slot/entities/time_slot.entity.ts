@@ -2,7 +2,6 @@ import { Entity, Column, Index, OneToMany } from 'typeorm';
 import { IEntity } from 'src/utils/interfaces/entity.interface';
 import { ApiProperty } from '@nestjs/swagger';
 import { ClassWeeklyScheduleEntity } from 'src/modules/class_weekly_schedule/entities/class_weekly_schedule.entity';
-import { ClassAdjustmentScheduleEntity } from 'src/modules/class_adjustment_schedule/entities/class_adjustment_schedule.entity';
 
 @Entity('time_slots')
 @Index(['startTime', 'endTime'], { unique: true })
@@ -27,10 +26,4 @@ export class TimeSlotEntity extends IEntity {
 
   @OneToMany(() => ClassWeeklyScheduleEntity, (schedule) => schedule.timeSlot)
   classWeeklySchedules: ClassWeeklyScheduleEntity[];
-
-  @OneToMany(
-    () => ClassAdjustmentScheduleEntity,
-    (schedule) => schedule.timeSlot,
-  )
-  classAdjustmentSchedules: ClassAdjustmentScheduleEntity[];
 }
